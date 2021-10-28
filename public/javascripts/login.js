@@ -37,7 +37,7 @@ const domain = "http://localhost:9997/";
             .catch(error => alert(error))
             .finally(() => {
                 if (loginSuccessful)
-                    window.location.replace(domain + 'dash/home');
+                    window.location.replace(domain + 'views/dashboard');
             });
 
     });

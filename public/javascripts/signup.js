@@ -35,7 +35,7 @@ const domain = "http://localhost:9997/";
             .catch(error => alert(error))
             .finally(() => {
                 if (accountCreated) {
-                    window.location.replace(domain + 'auth/login');
+                    window.location.replace(domain + 'views/login');
                 }
             });
 
