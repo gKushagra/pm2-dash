@@ -9,13 +9,8 @@ var { exec } = require('child_process');
 router.get('/pm2/apps', function (req, res, next) {
     const cmd = "pm2 list";
     exec(cmd, function (error, stdout, stderr) {
-        if (error) {
+        if (error || stderr) {
             console.log(error);
-            res.sendStatus(500);
-        }
-
-        if (stderr) {
-            console.log(stderr);
             res.status(200).json(stderr);
         }
 
@@ -30,17 +25,12 @@ router.get('/pm2/apps', function (req, res, next) {
 router.get('/pm2/:action/:app', function (req, res, next) {
     const cmd = `pm2 ${req.params.action} ${req.params.app}`;
     exec(cmd, function (error, stdout, stderr) {
-        if (error) {
+        if (error || stderr) {
             console.log(error);
-            res.sendStatus(500);
+            return res.status(200).json(stderr);
         }
 
-        if (stderr) {
-            console.log(stderr);
-            res.status(200).json(stderr);
-        }
-
-        res.status(200).json(stdout);
+        return res.status(200).json(stdout);
     });
 });
 
