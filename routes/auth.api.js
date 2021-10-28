@@ -4,7 +4,7 @@ var router = express.Router();
 var { MongoClient } = require('mongodb');
 var bcrypt = require('bcrypt');
 var jwt = require('jsonwebtoken');
-var nanoid = require('nanoid');
+var { nanoid } = require('nanoid');
 var nodemailer = require('nodemailer');
 
 const mongodbUri = process.env.MONGODB_URI;
@@ -31,15 +31,14 @@ router.post('/login', async function (req, res, next) {
     } finally {
         client.close();
         if (userFound) {
-            const token = jwt.sign({ user: req.body.email }, process.env.TOKEN_SECRET);
-            res.status(200).json({ message: "Account not found", token: null });
-        } else {
             if (bcrypt.compareSync(req.body.password, user.password)) {
                 const token = jwt.sign({ user: req.body.email }, process.env.TOKEN_SECRET);
                 res.status(200).json({ message: "Login Successful", token });
             } else {
                 res.status(200).json({ message: "Incorrect Email or Password", token: null });
             }
+        } else {
+            res.status(200).json({ message: "Account not found", token: null });
         }
     }
 });

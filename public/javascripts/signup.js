@@ -14,6 +14,9 @@ const domain = "http://localhost:9997/";
 
         fetch(domain + 'api/v1/auth/signup', {
             method: 'POST',
+            headers: {
+                "Content-Type": "application/json",
+            },
             body: JSON.stringify({
                 email: emailInput.value,
                 password: passInput.value
