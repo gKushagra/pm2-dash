@@ -18,22 +18,8 @@ window.onload = async function (event) {
     const logoutLink = document.getElementById('logout');
     const homeContainer = document.getElementById('home-content-container');
     var state = {
-        apps: null,
         terminal_out: null,
     }
-
-    const refreshPm2Data = async function () {
-        setTimeout(async () => {
-            await fetch(domain + 'api/v1/dash/pm2/apps')
-                .then(response => response.json())
-                .then(data => {
-                    // console.log(data);
-                    state.apps = data;
-                });
-        }, 5000);
-    }
-
-    await refreshPm2Data();
 
     logoutLink.addEventListener('click', function (event) {
         console.log('Logout');
@@ -57,13 +43,6 @@ window.onload = async function (event) {
         alert("Functionality not available right now.")
     });
 
-    const getDataFromAPI = async function (action, app) {
-        let response = await fetch(domain + `api/v1/dash/pm2/${action}/${app}`);
-        let tojson = await response.json();
-        // console.log(tojson);
-        state.terminal_out = tojson;
-    }
-
     const createTerminal = function () {
         var terminalContainer = document.createElement('div');
         terminalContainer.id = `terminal`;
@@ -71,11 +50,40 @@ window.onload = async function (event) {
 
         var $ptty = $('#terminal').Ptty();
 
+        const getAppsFromAPI = async function () {
+            let response = await fetch(domain + `api/v1/dash/pm2/apps`);
+            if (response.status === 500) {
+                alert("Sorry! The server encountered an error");
+                return;
+            }
+            let tojson = await response.json();
+            // console.log(tojson);
+            state.terminal_out = tojson;
+            updateCmdOut(tojson);
+        }
+
+        const getDataFromAPI = async function (action, app) {
+            let response = await fetch(domain + `api/v1/dash/pm2/${action}/${app}`);
+            if (response.status === 500) {
+                alert("Sorry! The server encountered an error");
+                return;
+            }
+            let tojson = await response.json();
+            // console.log(tojson);
+            state.terminal_out = tojson;
+            updateCmdOut(tojson);
+        }
+
+        const updateCmdOut = function (stdout) {
+            document.querySelector('.content').lastChild.querySelector('.cmd_out').innerText = stdout;
+        }
+
         // get all running apps, start/stop/reboot/remove app
         $ptty.register('command', {
             name: 'list',
             method: function (cmd) {
-                cmd.out = state.apps;
+                getAppsFromAPI();
+                cmd.out = "Please wait...";
                 return cmd;
             },
             options: [],
@@ -96,7 +104,8 @@ window.onload = async function (event) {
             name: 'start',
             method: function (cmd) {
                 if (cmd.hasOwnProperty('-app')) {
-                    cmd.out = `Starting ${cmd['-app']}`
+                    getDataFromAPI('start', cmd['-app'])
+                    cmd.out = "Please wait...";
                 } else {
                     cmd.out = "Error: App name not specified."
                 }
@@ -110,7 +119,8 @@ window.onload = async function (event) {
             name: 'stop',
             method: function (cmd) {
                 if (cmd.hasOwnProperty('-app')) {
-                    cmd.out = `Stopping ${cmd['-app']}`
+                    getDataFromAPI('stop', cmd['-app'])
+                    cmd.out = "Please wait...";
                 } else {
                     cmd.out = "Error: App name not specified."
                 }
@@ -124,7 +134,8 @@ window.onload = async function (event) {
             name: 'restart',
             method: function (cmd) {
                 if (cmd.hasOwnProperty('-app')) {
-                    cmd.out = `restarting ${cmd['-app']}`
+                    getDataFromAPI('restart', cmd['-app'])
+                    cmd.out = "Please wait...";
                 } else {
                     cmd.out = "Error: App name not specified."
                 }
@@ -138,7 +149,8 @@ window.onload = async function (event) {
             name: 'remove',
             method: function (cmd) {
                 if (cmd.hasOwnProperty('-app')) {
-                    cmd.out = `removing ${cmd['-app']}`
+                    getDataFromAPI('delete', cmd['-app'])
+                    cmd.out = "Please wait...";
                 } else {
                     cmd.out = "Error: App name not specified."
                 }
@@ -152,7 +164,8 @@ window.onload = async function (event) {
             name: 'logs',
             method: function (cmd) {
                 if (cmd.hasOwnProperty('-app')) {
-                    cmd.out = `getting logs for ${cmd['-app']}`
+                    getDataFromAPI('logs', cmd['-app'])
+                    cmd.out = "Please wait...";
                 } else {
                     cmd.out = "Error: App name not specified."
                 }
@@ -168,10 +181,9 @@ window.onload = async function (event) {
                 state.terminal_out = null;
                 if (cmd.hasOwnProperty('-app')) {
                     getDataFromAPI('show', cmd['-app'])
-                    cmd.out = state.terminal_out;
+                    cmd.out = "Please wait...";
                 } else {
                     cmd.out = "Error: App name not specified.";
-                    return cmd;
                 }
                 return cmd;
             },
@@ -179,24 +191,33 @@ window.onload = async function (event) {
             help: 'Show app info'
         });
 
+        $ptty.register('command', {
+            name: 'out',
+            method: function (cmd) {
+                cmd.out = state.terminal_out;
+                return cmd;
+            },
+            help: 'Show output'
+        });
+
         const commandsTable = `
-        <table style="border: 1px solid white; border-collapse: collapse; width: 360px;">
-        <tr><th style="border: 1px solid white;">Command</th>
-        <th style="border: 1px solid white;">Description</th></tr>
-        <tr><td style="border: 1px solid white;"><b>list</b></td>
-        <td style="border: 1px solid white;">Show all apps</td></tr>
-        <tr><td style="border: 1px solid white;"><b>start</b> <i>-app name/all</i></td>
-        <td style="border: 1px solid white;">Start app</td></tr>
-        <tr><td style="border: 1px solid white;"><b>stop</b> <i>-app name/all</i></td>
-        <td style="border: 1px solid white;">Stop app</td></tr>
-        <tr><td style="border: 1px solid white;"><b>restart</b> <i>-app name/all</i></td>
-        <td style="border: 1px solid white;">Restart app</td></tr>
-        <tr><td style="border: 1px solid white;"><b>remove</b> <i>-app name</i></td>
-        <td style="border: 1px solid white;">Remove app</td></tr>
-        <tr><td style="border: 1px solid white;"><b>logs</b> <i>-app name</i></td>
-        <td style="border: 1px solid white;">Show logs for app</td></tr>
-        <tr><td style="border: 1px solid white;"><b>show</b> <i>-app name</i></td>
-        <td style="border: 1px solid white;">Show app info</td></tr>
+        <table style="border: 1px solid #00c853; border-collapse: collapse; width: 360px;">
+        <tr><th style="border: 1px solid #00c853;">Command</th>
+        <th style="border: 1px solid #00c853;">Description</th></tr>
+        <tr><td style="border: 1px solid #00c853;"><b>list</b></td>
+        <td style="border: 1px solid #00c853;">Show all apps</td></tr>
+        <tr><td style="border: 1px solid #00c853;"><b>start</b> <i>-app name/all</i></td>
+        <td style="border: 1px solid #00c853;">Start app</td></tr>
+        <tr><td style="border: 1px solid #00c853;"><b>stop</b> <i>-app name/all</i></td>
+        <td style="border: 1px solid #00c853;">Stop app</td></tr>
+        <tr><td style="border: 1px solid #00c853;"><b>restart</b> <i>-app name/all</i></td>
+        <td style="border: 1px solid #00c853;">Restart app</td></tr>
+        <tr><td style="border: 1px solid #00c853;"><b>remove</b> <i>-app name</i></td>
+        <td style="border: 1px solid #00c853;">Remove app</td></tr>
+        <tr><td style="border: 1px solid #00c853;"><b>logs</b> <i>-app name</i></td>
+        <td style="border: 1px solid #00c853;">Show logs for app</td></tr>
+        <tr><td style="border: 1px solid #00c853;"><b>show</b> <i>-app name</i></td>
+        <td style="border: 1px solid #00c853;">Show app info</td></tr>
         </table>
         `;
     }
@@ -204,23 +225,3 @@ window.onload = async function (event) {
     pm2Link.click(); // default to pm2 link;
 
 }
-
-/**
- *
- * Features
- *
- * Environment variables
- *  - overwrite .env
- *
- * PM2
- *  - pm2 status
- *  - pm2 stop
- *  - pm2 restart
- *  - pm2 delete
- *  - pm2 logs
- *
- * Apache
- *  - enable/disable conf
- *  - add/remove conf
- *
- */
