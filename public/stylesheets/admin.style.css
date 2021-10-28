@@ -4,7 +4,8 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: "Poppins", sans-serif;
+  /* font-family: "Poppins", sans-serif; */
+  font-family: "Ubuntu", sans-serif;
 }
 .sidebar {
   position: fixed;
@@ -412,4 +413,19 @@ nav .profile-details i {
   .sidebar.active ~ .home-section nav .profile-details {
     display: none;
   }
+}
+
+#terminal {
+  max-height: calc(100vh - 120px) !important;
+  height: calc(100vh - 120px) !important;
+  overflow: auto !important;
+  border: 1px solid gainsboro !important;
+  border-radius: 4px !important;
+}
+
+#terminal div.content div {
+  font-family: "Ubuntu", sans-serif;
+  white-space: normal !important;
+  word-wrap: normal !important;
+  font-size: 14px !important;
 }
