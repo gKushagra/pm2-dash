@@ -347,7 +347,7 @@ nav .profile-details i {
   color: #333;
 }
 /* Responsive Media Query */
-@media (max-width: 1240px) {
+/* @media (max-width: 1240px) {
   .sidebar {
     width: 60px;
   }
@@ -359,7 +359,7 @@ nav .profile-details i {
     left: 60px;
   }
   .sidebar.active ~ .home-section {
-    /* width: calc(100% - 220px); */
+    width: calc(100% - 220px);
     overflow: hidden;
     left: 220px;
   }
@@ -413,7 +413,7 @@ nav .profile-details i {
   .sidebar.active ~ .home-section nav .profile-details {
     display: none;
   }
-}
+} */
 
 #terminal {
   max-height: calc(100vh - 120px) !important;
@@ -421,6 +421,10 @@ nav .profile-details i {
   overflow: auto !important;
   border: 1px solid gainsboro !important;
   border-radius: 4px !important;
+  letter-spacing: 2px !important;
+  font-weight: lighter !important;
+  line-height: 1rem !important;
+  word-spacing: 0.4rem !important;
 }
 
 #terminal div.content div {
@@ -428,4 +432,5 @@ nav .profile-details i {
   white-space: normal !important;
   word-wrap: normal !important;
   font-size: 14px !important;
+  color: #00c853 !important;
 }
